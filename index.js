@@ -68,7 +68,7 @@ function saveReminders(data) {
 async function getSheetData() {
     const res = await sheets.spreadsheets.values.get({
         spreadsheetId: SHEET_ID,
-        range: "A1:Z100", // диапазон
+        range: "A1:Z", // диапазон
     });
 
     return {
