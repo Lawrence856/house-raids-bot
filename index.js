@@ -30,7 +30,7 @@ bot.onText(/\/start/, async (ctx) => {
     const chatId = ctx.chat.id;
     const schedule = new Schedule({ chatId, bot });
 
-    await bot.sendMessage(chatId, `Бот включен ${chatId}`);
+    await bot.sendMessage(chatId, 'Бот включен');
     await schedule.startCheckSchedule();
 });
 

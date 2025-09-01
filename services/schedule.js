@@ -37,6 +37,16 @@ export class Schedule {
         const screenLinkIndex = headers.indexOf(SHEET_HEAD_SCREEN_LINK_KEY)
         const noteIndex = headers.indexOf(SHEET_HEAD_NOTE_KEY)
 
+        const eventsKeys = new Set(rows.map(row => {
+            const date = row[dateIndex]
+            const time = row[timeIndex]
+
+            const [day, mouth, year] = date.split('.');
+
+            const eventDate = dayjs(`${year}-${mouth}-${day} ${time}`);
+            return eventDate.format();
+        }))
+
         rows.forEach((row) => {
             const date = row[dateIndex]
             const time = row[timeIndex]
@@ -48,16 +58,15 @@ export class Schedule {
             const [day, mouth, year] = date.split('.');
 
             const eventDate = dayjs(`${year}-${mouth}-${day} ${time}`);
-            const eventKey = `id-${eventDate.format()}`;
+            const eventKey = eventDate.format();
 
             const dateMessage = `- ${SHEET_HEAD_DATE_KEY}: ${eventDate.format('DD MMMM')}`
             const timeMessage = `- ${SHEET_HEAD_TIME_KEY}: ${time}`
             const locationMessage = `- ${SHEET_HEAD_LOCATION_KEY}: ${location}`
             const houseFormatMessage = `- ${SHEET_HEAD_HOUSE_FORMAT_KEY}: ${houseFormat}`
-            const screenLinkMessage = `- ${SHEET_HEAD_SCREEN_LINK_KEY}: ${screenLink}`
             const noteMessage = `- ${SHEET_HEAD_NOTE_KEY}: ${note}`
 
-            console.log(this.reminders)
+            const imageUrl = this.convertDriveLink(screenLink)
 
             if (!this.reminders[eventKey]) {
                 this.reminders[eventKey] = {};
@@ -70,11 +79,13 @@ export class Schedule {
             const isFiveMinutesRemainHasBeenSent = this.reminders[eventKey][FIVE_MINUTES_REMAINING]
 
             const withNoteMessage = note ? [noteMessage] : []
-            const message = [dateMessage, locationMessage, timeMessage, houseFormatMessage, screenLinkMessage, ...withNoteMessage].join('\n')
+            const message = [dateMessage, locationMessage, timeMessage, houseFormatMessage, ...withNoteMessage].join('\n')
 
             // Уведомление за 20 минут
             if (isTwentyMinutesRemaining && !isTwentyMinutesRemainHasBeenSent) {
-                this.bot.sendMessage(this.chatId, `🏠Через 20 минут слет на дом!\n\n${message}`);
+                this.bot.sendPhoto(this.chatId, imageUrl, {
+                    caption:  `🏠Через 20 минут слет на дом!\n\n${message}`
+                });
 
                 this.reminders[eventKey][TWENTY_MINUTES_REMAINING] = true;
                 saveReminders(this.reminders);
@@ -82,12 +93,22 @@ export class Schedule {
 
             // Уведомление за 5 минут
             if (isFiveMinutesRemaining && !isFiveMinutesRemainHasBeenSent) {
-                this.bot.sendMessage(this.chatId, `🔥Через 5 минут слет на дом!\n\n${message}`);
+                this.bot.sendPhoto(this.chatId, imageUrl, {
+                    caption: `🔥Через 5 минут слет на дом!\n\n${message}`
+                });
 
                 this.reminders[eventKey][FIVE_MINUTES_REMAINING] = true;
                 saveReminders(this.reminders);
             }
         })
+
+        // Нужно для того, что бы не было утечек памяти
+        for (const key of Object.keys(this.reminders)) {
+            if (!eventsKeys.has(key)) {
+                delete this.reminders[key];
+                saveReminders(this.reminders);
+            }
+        }
     }
 
     async startCheckSchedule() {
@@ -97,5 +118,14 @@ export class Schedule {
 
     stopCheckSchedule() {
         clearInterval(this.checkScheduleIntervalId);
+    }
+
+    convertDriveLink(url) {
+        const regex = /\/d\/([^/]+)\//;
+        const match = url.match(regex);
+        if (match && match[1]) {
+            return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+        }
+        return url;
     }
 }
