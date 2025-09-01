@@ -1,3 +1,5 @@
 /node_modules
-/credentials.json
-/reminders.json
+credentials.json
+reminders.json
+package-lock.json
+.env

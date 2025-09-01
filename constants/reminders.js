@@ -1,0 +1,2 @@
+export const TWENTY_MINUTES_REMAINING = 20
+export const FIVE_MINUTES_REMAINING = 5

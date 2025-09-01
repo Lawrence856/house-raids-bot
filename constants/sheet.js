@@ -1,0 +1,6 @@
+export const SHEET_HEAD_DATE_KEY = 'Дата'
+export const SHEET_HEAD_TIME_KEY = 'Время'
+export const SHEET_HEAD_LOCATION_KEY = 'Лока'
+export const SHEET_HEAD_HOUSE_FORMAT_KEY = 'Формат места'
+export const SHEET_HEAD_SCREEN_LINK_KEY = 'Ссылка на скрин'
+export const SHEET_HEAD_NOTE_KEY = 'Примечание'
