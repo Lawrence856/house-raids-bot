@@ -121,11 +121,15 @@ export class Schedule {
     }
 
     convertDriveLink(url) {
+        if (!url && typeof url !== 'string') return ''
+
         const regex = /\/d\/([^/]+)\//;
         const match = url.match(regex);
+
         if (match && match[1]) {
             return `https://drive.google.com/uc?export=view&id=${match[1]}`;
         }
+
         return url;
     }
 }
