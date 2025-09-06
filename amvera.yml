@@ -10,7 +10,7 @@ build:
   additionalCommands: null
   artifacts:
     '*': /
-  command: npm install && npm run start
+  command: npm install
 run:
   scriptName: index.js
   scriptArguments: null
