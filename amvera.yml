@@ -4,13 +4,12 @@ meta:
   environment: node
   toolchain:
     name: npm
-    version: 18
+    version: 20.12.2
 build:
   skip: false
   additionalCommands: null
   artifacts:
     '*': /
-  command: npm install
 run:
   scriptName: index.js
   scriptArguments: null
