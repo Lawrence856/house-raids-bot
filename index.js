@@ -1,21 +1,17 @@
-import express from "express";
 import dotenv from 'dotenv';
 import TelegramBot from 'node-telegram-bot-api';
 import {Schedule} from "./services/schedule.js";
 
 dotenv.config();
 
-const PORT = process.env.PORT || 8080
-
-const bot = new TelegramBot(process.env.TELEGRAM_TOKEN, { polling: true });
-const app = express();
-
-app.get("/", (req, res) => {
-    res.send("🤖 Telegram bot + Google Sheets работает!");
-});
-
-app.listen(PORT, () => {
-    console.log(`🚀 Сервер запущен на http://localhost:${PORT}`);
+const bot = new TelegramBot(process.env.TELEGRAM_TOKEN, {
+    polling: true,
+    request: {
+        agentOptions: {
+            keepAlive: true,
+            family: 4
+        }
+    }
 });
 
 // Команда для ручного запуска

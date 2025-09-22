@@ -37,15 +37,15 @@ export class Schedule {
         const screenLinkIndex = headers.indexOf(SHEET_HEAD_SCREEN_LINK_KEY)
         const noteIndex = headers.indexOf(SHEET_HEAD_NOTE_KEY)
 
-        const eventsKeys = new Set(rows.map(row => {
-            const date = row[dateIndex]
-            const time = row[timeIndex]
-
-            const [day, mouth, year] = date.split('.');
-
-            const eventDate = dayjs(`${year}-${mouth}-${day} ${time}`);
-            return eventDate.format();
-        }))
+        // const eventsKeys = new Set(rows.map(row => {
+        //     const date = row[dateIndex]
+        //     const time = row[timeIndex]
+        //
+        //     const [day, mouth, year] = date.split('.');
+        //
+        //     const eventDate = dayjs(`${year}-${mouth}-${day} ${time}`);
+        //     return eventDate.format();
+        // }))
 
         rows.forEach((row) => {
             const date = row[dateIndex]
@@ -102,13 +102,13 @@ export class Schedule {
             }
         })
 
-        // Нужно для того, что бы не было утечек памяти
-        for (const key of Object.keys(this.reminders)) {
-            if (!eventsKeys.has(key)) {
-                delete this.reminders[key];
-                saveReminders(this.reminders);
-            }
-        }
+        // // Нужно для того, что бы не было утечек памяти
+        // for (const key of Object.keys(this.reminders)) {
+        //     if (!eventsKeys.has(key)) {
+        //         delete this.reminders[key];
+        //         saveReminders(this.reminders);
+        //     }
+        // }
     }
 
     async startCheckSchedule() {
