@@ -17,6 +17,6 @@
     "dayjs": "^1.11.16",
     "dotenv": "^17.2.1",
     "googleapis": "^159.0.0",
-    "node-telegram-bot-api": "^0.66.0"
+    "grammy": "^1.38.2"
   }
 }

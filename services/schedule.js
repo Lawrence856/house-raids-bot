@@ -35,11 +35,11 @@ export class Schedule {
 
     _sendMessage(message, imageUrl) {
         if(imageUrl) {
-            this._bot.sendPhoto(this._chatId, imageUrl, {
+            this._bot.api.sendPhoto(this._chatId, imageUrl, {
                 caption:  message
             });
         } else {
-            this._bot.sendMessage(this._chatId, message)
+            this._bot.api.sendMessage(this._chatId, message)
         }
     }
 
@@ -85,6 +85,7 @@ export class Schedule {
                 this._reminders[eventKey] = {};
             }
 
+            const isEventHasAlreadyDone = nowDate.isAfter(eventDate)
             const isTwentyMinutesRemaining = nowDate.add(TWENTY_MINUTES_REMAINING, 'minute').isSame(eventDate, 'minute')
             const isFiveMinutesRemaining = nowDate.add(FIVE_MINUTES_REMAINING, 'minute').isSame(eventDate, 'minute')
 
@@ -107,12 +108,11 @@ export class Schedule {
 
                 this._reminders[eventKey][FIVE_MINUTES_REMAINING] = true;
             }
+
+            if(isEventHasAlreadyDone) {
+                delete this._reminders[eventKey]
+            }
         })
-
-
-        if(Object.keys(this._reminders).length > 100) {
-            this._reminders = {}
-        }
 
         saveReminders(this._reminders);
     }

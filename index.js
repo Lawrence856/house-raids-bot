@@ -1,23 +1,16 @@
 import dotenv from 'dotenv';
-import TelegramBot from 'node-telegram-bot-api';
+import { Bot } from "grammy";
 import {Schedule} from "./services/schedule.js";
 
 dotenv.config();
 
-const bot = new TelegramBot(process.env.TELEGRAM_TOKEN, {
-    polling: true,
-    request: {
-        agentOptions: {
-            keepAlive: true,
-            family: 4
-        }
-    }
-});
+const bot = new Bot(process.env.TELEGRAM_TOKEN);
 const chatsSchedule = new Map()
 
 // Команда страта бота
-bot.onText(/\/start/, async (ctx) => {
+bot.command('start', async (ctx) => {
     const chatId = ctx.chat.id;
+
 
     if (!chatsSchedule.has(chatId)) {
         chatsSchedule.set(chatId, new Schedule({ chatId, bot }));
@@ -28,7 +21,7 @@ bot.onText(/\/start/, async (ctx) => {
 });
 
 // Команда остановки бота
-bot.onText(/\/stop/, async (ctx) => {
+bot.command('stop', async (ctx) => {
     const chatId = ctx.chat.id;
 
     if (chatsSchedule.has(chatId)) {
@@ -38,3 +31,5 @@ bot.onText(/\/stop/, async (ctx) => {
         chatsSchedule.delete(chatId)
     }
 });
+
+bot.start()
