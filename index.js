@@ -13,32 +13,28 @@ const bot = new TelegramBot(process.env.TELEGRAM_TOKEN, {
         }
     }
 });
+const chatsSchedule = new Map()
 
-// Команда для ручного запуска
+// Команда страта бота
 bot.onText(/\/start/, async (ctx) => {
     const chatId = ctx.chat.id;
-    const schedule = new Schedule({ chatId, bot });
 
+    if (!chatsSchedule.has(chatId)) {
+        chatsSchedule.set(chatId, new Schedule({ chatId, bot }));
+    }
+
+    const schedule = chatsSchedule.get(chatId)
     await schedule.startCheckSchedule();
-    await bot.sendMessage(chatId, 'Бот включен');
 });
 
-// Сигналы завершения (Ctrl+C, kill, systemd, pm2 и т.д.)
-process.on("SIGINT", () => shutdown("SIGINT"));
-process.on("SIGTERM", () => shutdown("SIGTERM"));
+// Команда остановки бота
+bot.onText(/\/stop/, async (ctx) => {
+    const chatId = ctx.chat.id;
 
-// 🟢 Обработчики завершения процесса
-function shutdown(signal) {
-    console.log(`\nПолучен сигнал ${signal}. Отключаем бота...`);
+    if (chatsSchedule.has(chatId)) {
+        const schedule = chatsSchedule.get(chatId)
 
-    // Отключаем поллинг
-    bot.stopPolling()
-        .then(() => {
-            console.log("Бот отключён корректно ✅");
-            process.exit(0);
-        })
-        .catch((err) => {
-            console.error("Ошибка при остановке:", err);
-            process.exit(1);
-        });
-}
+        schedule.stopCheckSchedule();
+        chatsSchedule.delete(chatId)
+    }
+});

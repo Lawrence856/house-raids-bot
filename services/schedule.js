@@ -14,17 +14,40 @@ dayjs.locale('ru')
 
 export class Schedule {
     constructor({ bot, chatId }) {
-        this.bot = bot;
-        this.chatId = chatId;
-        this.reminders = loadReminders()
-        this.checkScheduleIntervalId = null
+        this._bot = bot;
+        this._chatId = chatId;
+        this._reminders = loadReminders()
+        this._checkScheduleIntervalId = null
     }
 
-    async checkSchedule() {
+    _convertDriveLink(url) {
+        if (!url && typeof url !== 'string') return ''
+
+        const regex = /\/d\/([^/]+)\//;
+        const match = url.match(regex);
+
+        if (match && match[1]) {
+            return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+        }
+
+        return url;
+    }
+
+    _sendMessage(message, imageUrl) {
+        if(imageUrl) {
+            this._bot.sendPhoto(this._chatId, imageUrl, {
+                caption:  message
+            });
+        } else {
+            this._bot.sendMessage(this._chatId, message)
+        }
+    }
+
+    async _checkSchedule() {
         const { headers, rows } = await sheetsApi.getSheetData();
 
         if (!rows.length) {
-            await this.bot.sendMessage(this.chatId, "Таблица пуста.");
+            await this._sendMessage("В таблице отсутсвуют записи о слетах.");
             return;
         }
 
@@ -36,16 +59,6 @@ export class Schedule {
         const houseFormatIndex = headers.indexOf(SHEET_HEAD_HOUSE_FORMAT_KEY)
         const screenLinkIndex = headers.indexOf(SHEET_HEAD_SCREEN_LINK_KEY)
         const noteIndex = headers.indexOf(SHEET_HEAD_NOTE_KEY)
-
-        // const eventsKeys = new Set(rows.map(row => {
-        //     const date = row[dateIndex]
-        //     const time = row[timeIndex]
-        //
-        //     const [day, mouth, year] = date.split('.');
-        //
-        //     const eventDate = dayjs(`${year}-${mouth}-${day} ${time}`);
-        //     return eventDate.format();
-        // }))
 
         rows.forEach((row) => {
             const date = row[dateIndex]
@@ -66,70 +79,53 @@ export class Schedule {
             const houseFormatMessage = `- ${SHEET_HEAD_HOUSE_FORMAT_KEY}: ${houseFormat}`
             const noteMessage = `- ${SHEET_HEAD_NOTE_KEY}: ${note}`
 
-            const imageUrl = this.convertDriveLink(screenLink)
+            const imageUrl = this._convertDriveLink(screenLink)
 
-            if (!this.reminders[eventKey]) {
-                this.reminders[eventKey] = {};
+            if (!this._reminders[eventKey]) {
+                this._reminders[eventKey] = {};
             }
 
             const isTwentyMinutesRemaining = nowDate.add(TWENTY_MINUTES_REMAINING, 'minute').isSame(eventDate, 'minute')
             const isFiveMinutesRemaining = nowDate.add(FIVE_MINUTES_REMAINING, 'minute').isSame(eventDate, 'minute')
 
-            const isTwentyMinutesRemainHasBeenSent = this.reminders[eventKey][TWENTY_MINUTES_REMAINING]
-            const isFiveMinutesRemainHasBeenSent = this.reminders[eventKey][FIVE_MINUTES_REMAINING]
+            const isTwentyMinutesRemainHasBeenSent = this._reminders[eventKey][TWENTY_MINUTES_REMAINING]
+            const isFiveMinutesRemainHasBeenSent = this._reminders[eventKey][FIVE_MINUTES_REMAINING]
 
             const withNoteMessage = note ? [noteMessage] : []
             const message = [dateMessage, locationMessage, timeMessage, houseFormatMessage, ...withNoteMessage].join('\n')
 
             // Уведомление за 20 минут
             if (isTwentyMinutesRemaining && !isTwentyMinutesRemainHasBeenSent) {
-                this.bot.sendPhoto(this.chatId, imageUrl, {
-                    caption:  `🏠Через 20 минут слет на дом!\n\n${message}`
-                });
+                this._sendMessage(`🏠Через 20 минут слет на дом!\n\n${message}`, imageUrl);
 
-                this.reminders[eventKey][TWENTY_MINUTES_REMAINING] = true;
-                saveReminders(this.reminders);
+                this._reminders[eventKey][TWENTY_MINUTES_REMAINING] = true;
             }
 
             // Уведомление за 5 минут
             if (isFiveMinutesRemaining && !isFiveMinutesRemainHasBeenSent) {
-                this.bot.sendPhoto(this.chatId, imageUrl, {
-                    caption: `🔥Через 5 минут слет на дом!\n\n${message}`
-                });
+                this._sendMessage( `🔥Через 5 минут слет на дом!\n\n${message}`, imageUrl);
 
-                this.reminders[eventKey][FIVE_MINUTES_REMAINING] = true;
-                saveReminders(this.reminders);
+                this._reminders[eventKey][FIVE_MINUTES_REMAINING] = true;
             }
         })
 
-        // // Нужно для того, что бы не было утечек памяти
-        // for (const key of Object.keys(this.reminders)) {
-        //     if (!eventsKeys.has(key)) {
-        //         delete this.reminders[key];
-        //         saveReminders(this.reminders);
-        //     }
-        // }
+
+        if(Object.keys(this._reminders).length > 100) {
+            this._reminders = {}
+        }
+
+        saveReminders(this._reminders);
     }
 
-    async startCheckSchedule() {
-        await this.checkSchedule()
-        this.checkScheduleIntervalId = setInterval(() => this.checkSchedule(), 15000); // Запускаем уведомления раз в 15 секунд
+    startCheckSchedule() {
+        this._checkSchedule()
+        this._checkScheduleIntervalId = setInterval(() => this._checkSchedule(), 15000); // Запускаем уведомления раз в 15 секунд
+
+        this._sendMessage('Бот запущен!')
     }
 
     stopCheckSchedule() {
-        clearInterval(this.checkScheduleIntervalId);
-    }
-
-    convertDriveLink(url) {
-        if (!url && typeof url !== 'string') return ''
-
-        const regex = /\/d\/([^/]+)\//;
-        const match = url.match(regex);
-
-        if (match && match[1]) {
-            return `https://drive.google.com/uc?export=view&id=${match[1]}`;
-        }
-
-        return url;
+        clearInterval(this._checkScheduleIntervalId);
+        this._sendMessage('Бот приостановлен!')
     }
 }
