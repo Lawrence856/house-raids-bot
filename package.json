@@ -4,7 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "pm2 start index.js --name \"house-raids-bot\" && pm2 startup && pm2 save",
+    "stop": "pm2 stop house-raids-bot",
+    "restart": "pm2 restart house-raids-bot",
+    "logs": "pm2 logs house-raids-bot",
+    "dev": "node index.js"
   },
   "type": "module",
   "author": "",
