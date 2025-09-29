@@ -76,8 +76,13 @@ export class HousesReminders {
     }
 
     startCheckReminders() {
-        this._checkRemindersIntervalId = setInterval(() => this._checkReminders(), CHECK_REMINDERS_INTERVAL);
-        this._sendMessage('Бот запущен!')
+        if(this._checkRemindersIntervalId) {
+            this._sendMessage('Бот уже запущен!')
+        } else {
+            this._checkRemindersIntervalId = setInterval(() => this._checkReminders(), CHECK_REMINDERS_INTERVAL);
+            this._sendMessage('Бот запущен!')
+        }
+
     }
 
     stopCheckReminders() {
