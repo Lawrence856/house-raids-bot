@@ -101,7 +101,7 @@ export class Houses {
 
             const [day, mouth, year] = date.split('.');
 
-            const houseDate = dayjs(`${year}-${mouth}-${day} ${time}`);
+            const houseDate = dayjs(`${year}-${mouth}-${day}T${time}`);
             const houseDateIso = houseDate.toISOString();
             const id = this._generateIdByDate(houseDateIso)
             const hasId = this._houses.some((house) => house.id === id);
