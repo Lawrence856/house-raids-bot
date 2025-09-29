@@ -99,7 +99,7 @@ export class Houses {
             const screenshot = row[headers.indexOf(SHEET_HEAD_SCREEN_LINK_KEY)]
             const note = row[headers.indexOf(SHEET_HEAD_NOTE_KEY)]
 
-            if (!date) return acc
+            if (date === "Invalid Date") return acc
 
             const [day, mouth, year] = date.split('.');
 
