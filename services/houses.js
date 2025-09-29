@@ -99,14 +99,14 @@ export class Houses {
             const screenshot = row[headers.indexOf(SHEET_HEAD_SCREEN_LINK_KEY)]
             const note = row[headers.indexOf(SHEET_HEAD_NOTE_KEY)]
 
-            if (date === "Invalid Date") return acc
-
             const [day, mouth, year] = date.split('.');
 
             const houseDate = dayjs(`${year}-${mouth}-${day} ${time}`);
             const houseDateIso = houseDate.format();
             const id = this._generateIdByDate(houseDateIso)
             const hasId = this._houses.some((house) => house.id === id);
+
+            if (Number.isNaN(id)) return acc
 
             if(hasId) {
                 const event = this._houses.find((house) => house.id === id);
