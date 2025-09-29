@@ -135,6 +135,7 @@ export class Houses {
     }
     
     startReadingSheet() {
+        this._readSheet()
         setInterval(() => this._readSheet(), READ_SHEET_INTERVAL)
     }
 }

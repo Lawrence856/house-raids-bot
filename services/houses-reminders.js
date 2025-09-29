@@ -79,6 +79,7 @@ export class HousesReminders {
         if(this._checkRemindersIntervalId) {
             this._sendMessage('Бот уже запущен!')
         } else {
+            this._checkReminders()
             this._checkRemindersIntervalId = setInterval(() => this._checkReminders(), CHECK_REMINDERS_INTERVAL);
             this._sendMessage('Бот запущен!')
         }
