@@ -108,26 +108,31 @@ export class Houses {
 
             if (Number.isNaN(id)) return acc
 
+            const eventData = {
+                location: location ?? null,
+                format: format ?? null,
+                screenshot: this._convertDriveLink(screenshot) ?? null,
+                note: note ?? null
+            }
+
             if(hasId) {
                 const event = this._houses.find((house) => house.id === id);
                 const index = this._houses.findIndex((house) => house.id === id);
 
-                acc.splice(index, 1, event);
+                acc.splice(index, 1, {
+                    ...event,
+                    ...eventData
+                });
             } else {
-                const event = {
+                acc.push({
+                    ...eventData,
                     id,
                     date: houseDateIso,
-                    location: location ?? null,
-                    format: format ?? null,
-                    screenshot: this._convertDriveLink(screenshot) ?? null,
-                    note: note ?? null,
                     reminders: {
                         [TWENTY_MINUTES_REMAINING]: false,
                         [FIVE_MINUTES_REMAINING]: false
                     }
-                }
-
-                acc.push(event);
+                });
             }
 
             return acc
